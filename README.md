@@ -238,7 +238,7 @@ describe("MyContract", () => {
 
 ## Real Contract Examples
 
-This documentation is based on 7 production contract projects from the tolk-bench repository:
+This documentation is based on 7 production contract projects from the **[tolk-bench](https://github.com/ton-blockchain/tolk-bench)** repository:
 
 1. **01_jetton** - TEP-74 compliant jetton (fungible token) implementation
 2. **02_nft** - TEP-62 compliant NFT collection and items
@@ -282,7 +282,7 @@ All examples in this documentation are taken directly from these production-read
 
 ## Contributing
 
-This documentation is extracted from the tolk-bench repository. To improve it:
+This documentation is extracted from the **[tolk-bench](https://github.com/ton-blockchain/tolk-bench)** repository. To improve it:
 
 1. Study production contracts in `contracts_Tolk/`
 2. Review tests in `tests/`
@@ -291,7 +291,7 @@ This documentation is extracted from the tolk-bench repository. To improve it:
 
 ## License
 
-Documentation follows the license of the tolk-bench repository and Tolk compiler (LGPL).
+Documentation follows the license of the **[tolk-bench](https://github.com/ton-blockchain/tolk-bench)** repository and Tolk compiler (LGPL).
 
 ---
 
