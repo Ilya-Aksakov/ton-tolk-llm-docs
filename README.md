@@ -168,6 +168,7 @@ get fun get_balance(): coins {
 import { Blockchain, SandboxContract, TreasuryContract } from "@ton/sandbox";
 import { Cell, toNano } from "@ton/core";
 import { compile } from "@ton/blueprint";
+import { MyContract } from "../wrappers/MyContract";
 import "@ton/test-utils";
 
 describe("MyContract", () => {
