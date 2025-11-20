@@ -21,19 +21,19 @@ The `common.tolk` module is automatically available and contains the most freque
 
 #### Primitive Types
 
-| Type | Description | TVM Representation |
-|------|-------------|-------------------|
-| `int` | 257-bit signed integer | Native integer |
-| `bool` | Boolean: `true` or `false` | -1 (true) or 0 (false) |
-| `cell` | Cell with up to 1023 bits and 4 refs | Native cell |
-| `slice` | Cell opened for reading | Cell slice |
-| `builder` | Cell under construction | Cell builder |
-| `continuation` | Executable TVM bytecode | Continuation |
-| `tuple` | Collection of 0-255 elements | Tuple |
-| `address` | Internal address (workchain + hash) | 267-bit slice |
-| `any_address` | Internal/external/none address | Slice |
-| `void` | Unit type (no value) | Empty |
-| `never` | Type for functions that never return | Special |
+| Type           | Description                          | TVM Representation     |
+| -------------- | ------------------------------------ | ---------------------- |
+| `int`          | 257-bit signed integer               | Native integer         |
+| `bool`         | Boolean: `true` or `false`           | -1 (true) or 0 (false) |
+| `cell`         | Cell with up to 1023 bits and 4 refs | Native cell            |
+| `slice`        | Cell opened for reading              | Cell slice             |
+| `builder`      | Cell under construction              | Cell builder           |
+| `continuation` | Executable TVM bytecode              | Continuation           |
+| `tuple`        | Collection of 0-255 elements         | Tuple                  |
+| `address`      | Internal address (workchain + hash)  | 267-bit slice          |
+| `any_address`  | Internal/external/none address       | Slice                  |
+| `void`         | Unit type (no value)                 | Empty                  |
+| `never`        | Type for functions that never return | Special                |
 
 #### Fixed-Width Integer Types
 
@@ -63,6 +63,7 @@ Cell<T>                 // Typed cell reference
 ```
 
 **Example from jetton storage:**
+
 ```tolk
 struct WalletStorage {
     jettonBalance: coins
@@ -83,6 +84,7 @@ fun min(x: int, y: int): int
 Computes the minimum of two integers.
 
 **Example:**
+
 ```tolk
 var storageReserve = min(currentBalance, MIN_TONS_FOR_STORAGE);
 ```
@@ -108,6 +110,7 @@ fun minMax(x: int, y: int): (int, int)
 Sorts two integers, always returning `(smaller, larger)`.
 
 **Example:**
+
 ```tolk
 var (low, high) = minMax(price1, price2);
 ```
@@ -144,6 +147,7 @@ fun divMod(x: int, y: int): (int, int)
 Returns `(quotient, remainder)` of x / y.
 
 **Example:**
+
 ```tolk
 var (days, hours) = divMod(totalHours, 24);
 ```
@@ -169,6 +173,7 @@ fun mulDivFloor(x: int, y: int, z: int): int
 Computes `floor(x * y / z)` using 513-bit intermediate result to prevent overflow.
 
 **Example from fee calculation:**
+
 ```tolk
 var proportionalFee = mulDivFloor(amount, feeNumerator, feeDenominator);
 ```
@@ -212,6 +217,7 @@ fun ton(floatString: slice): coins
 Converts a constant floating-point string to nanotoncoins at compile-time.
 
 **Examples:**
+
 ```tolk
 const MIN_TONS_FOR_STORAGE = ton("0.01");      // 10000000 nanotons
 const GAS_CONSUMPTION = ton("0.015");           // 15000000 nanotons
@@ -234,6 +240,7 @@ fun contract.getAddress(): address
 Returns the internal address of the current smart contract.
 
 **Example from wallet:**
+
 ```tolk
 var myWorkchain = contract.getAddress().getWorkchain();
 ```
@@ -250,6 +257,7 @@ fun contract.getOriginalBalance(): coins
 Returns the balance in nanotoncoins at the start of Computation Phase.
 
 **Example from jetton wallet:**
+
 ```tolk
 var tonBalanceBeforeMsg = contract.getOriginalBalance() - msgValue;
 var storageFee = MIN_TONS_FOR_STORAGE - min(tonBalanceBeforeMsg, MIN_TONS_FOR_STORAGE);
@@ -278,6 +286,7 @@ fun contract.getData(): cell
 Returns the persistent contract storage cell.
 
 **Example pattern from jetton:**
+
 ```tolk
 fun WalletStorage.load() {
     return WalletStorage.fromCell(contract.getData())
@@ -293,6 +302,7 @@ fun contract.setData(c: cell): void
 Sets the persistent contract storage.
 
 **Example pattern:**
+
 ```tolk
 fun WalletStorage.save(self) {
     contract.setData(self.toCell())
@@ -332,6 +342,7 @@ fun blockchain.now(): int
 Returns current Unix timestamp in seconds.
 
 **Example from wallet-v5:**
+
 ```tolk
 assert (msg.validUntil > blockchain.now()) throw ERROR_EXPIRED;
 ```
@@ -370,6 +381,7 @@ fun blockchain.configParam(x: int): cell?
 Returns the value of global configuration parameter with index `x`, or `null`.
 
 **Example:**
+
 ```tolk
 var gasConfig = blockchain.configParam(20);  // Gas limits configuration
 ```
@@ -385,6 +397,7 @@ fun commitContractDataAndActions(): void
 Commits current state of c4 (persistent data) and c5 (actions) so that execution is considered successful even if an exception is thrown later.
 
 **Example from wallet-v5:**
+
 ```tolk
 // Store and commit the seqno increment to prevent replays
 storage.seqno += 1;
@@ -407,12 +420,14 @@ fun T.toCell(self, options: PackOptions = {}): Cell<T>
 Converts any object to a typed cell (most commonly used for structures).
 
 **Example from jetton:**
+
 ```tolk
 var st: WalletStorage = { jettonBalance: balance, ownerAddress: owner, minterAddress: minter };
 contract.setData(st.toCell());
 ```
 
 **PackOptions:**
+
 - `skipBitsNValidation: bool = false` - Skip runtime validation of `bitsN` types
 
 ---
@@ -427,11 +442,13 @@ fun T.fromCell(packedCell: cell, options: UnpackOptions = {}): T
 Parses an object from a cell.
 
 **Example:**
+
 ```tolk
 var storage = WalletStorage.fromCell(contract.getData());
 ```
 
 **UnpackOptions:**
+
 - `assertEndAfterReading: bool = true` - Ensure no remaining data after reading
 - `throwIfOpcodeDoesNotMatch: int = 63` - Exception code if prefix doesn't match
 
@@ -447,6 +464,7 @@ fun T.fromSlice(rawSlice: slice, options: UnpackOptions = {}): T
 Parses an object from a slice without mutating it.
 
 **Example from jetton wallet:**
+
 ```tolk
 val msg = lazy AllowedMessageToWallet.fromSlice(in.body);
 match (msg) {
@@ -469,6 +487,7 @@ fun slice.loadAny<T>(mutate self, options: UnpackOptions = {}): T
 Loads an object from slice, shifting its internal pointer (like `loadUint`).
 
 **Example:**
+
 ```tolk
 var header: MessageHeader = cs.loadAny();
 var body: MessageBody = cs.loadAny();
@@ -495,6 +514,7 @@ fun builder.storeAny<T>(mutate self, v: T, options: PackOptions = {}): self
 Stores any object to a builder.
 
 **Example:**
+
 ```tolk
 var b = beginCell()
     .storeUint(0x12345678, 32)
@@ -514,6 +534,7 @@ fun T.getDeclaredPackPrefix(): int
 Returns the serialization prefix of a struct at compile-time.
 
 **Example:**
+
 ```tolk
 struct (0xF0) AssetRegular { ... }
 AssetRegular.getDeclaredPackPrefix()     // Returns 240
@@ -529,6 +550,7 @@ fun T.getDeclaredPackPrefixLen(): int
 Returns the prefix length in bits.
 
 **Example:**
+
 ```tolk
 AssetRegular.getDeclaredPackPrefixLen()  // Returns 16
 ```
@@ -545,6 +567,7 @@ fun Cell<T>.load(self, options: UnpackOptions = {}): T
 Unpacks data from a typed cell reference.
 
 **Example:**
+
 ```tolk
 struct MyStorage {
     extra: Cell<ExtraData>
@@ -568,6 +591,7 @@ fun stringCrc32(constString: slice): int
 Calculates CRC32 of a constant string at compile-time.
 
 **Example:**
+
 ```tolk
 const OP_TRANSFER = stringCrc32("op::transfer");  // 0xF8A7EA5
 ```
@@ -609,6 +633,7 @@ fun stringToBase256(constString: slice): int
 Interprets N-char ASCII string as base-256 number.
 
 **Example:**
+
 ```tolk
 const value = stringToBase256("AB");  // = 16706 (65*256 + 66)
 ```
@@ -625,6 +650,7 @@ fun cell.hash(self): uint256
 Computes the representation hash of a cell.
 
 **Example from exotic cells:**
+
 ```tolk
 return beginCell()
     .storeInt(ExoticCellType.LibraryReference as int, 8)
@@ -642,6 +668,7 @@ fun slice.hash(self): uint256
 Computes the hash of a slice (same as creating cell and hashing it).
 
 **Example from wallet-v5:**
+
 ```tolk
 assert (isSignatureValid(signedSlice.hash(), signature, storage.publicKey)) throw ERROR_INVALID_SIGNATURE;
 ```
@@ -676,6 +703,7 @@ fun isSignatureValid(hash: int, signature: slice, publicKey: int): bool
 Checks Ed25519 signature of a hash using public key.
 
 **Parameters:**
+
 - `hash`: 256-bit unsigned integer (usually from `slice.hash()`)
 - `signature`: Must contain at least 512 bits
 - `publicKey`: 256-bit unsigned integer
@@ -683,6 +711,7 @@ Checks Ed25519 signature of a hash using public key.
 **Note**: Data is hashed twice - once by you, once inside `CHKSIGNS`.
 
 **Example from wallet-v5:**
+
 ```tolk
 var signedSlice = inMsgBody.removeLastBits(SIZE_SIGNATURE);
 var signature = inMsgBody.getLastBits(SIZE_SIGNATURE);
@@ -752,6 +781,7 @@ fun random.initialize(): void
 Initializes random seed with current time (makes random generation unpredictable).
 
 **Example:**
+
 ```tolk
 random.initialize();
 var randomValue = random.range(100);  // 0..99
@@ -789,6 +819,7 @@ fun beginCell(): builder
 Creates a new empty builder.
 
 **Example:**
+
 ```tolk
 var cell = beginCell()
     .storeUint(0x12345678, 32)
@@ -835,6 +866,7 @@ fun slice.loadInt(mutate self, len: int): int
 Loads a signed `len`-bit integer from slice.
 
 **Example:**
+
 ```tolk
 var opcode = cs.loadInt(32);
 ```
@@ -849,6 +881,7 @@ fun slice.loadUint(mutate self, len: int): int
 Loads an unsigned `len`-bit integer.
 
 **Example:**
+
 ```tolk
 var amount = cs.loadUint(64);
 ```
@@ -881,6 +914,7 @@ fun slice.loadCoins(mutate self): coins
 Loads serialized nanotoncoins (unsigned integer up to 2^120 - 1).
 
 **Example from jetton:**
+
 ```tolk
 var jettonAmount = cs.loadCoins();
 ```
@@ -1010,6 +1044,7 @@ fun slice.removeLastBits(mutate self, len: int): self
 Removes last `len` bits.
 
 **Example from wallet-v5:**
+
 ```tolk
 var signature = inMsgBody.getLastBits(SIZE_SIGNATURE);
 var signedSlice = inMsgBody.removeLastBits(SIZE_SIGNATURE);
@@ -1044,6 +1079,7 @@ fun slice.assertEnd(self): void
 Throws exception 9 if slice is not empty.
 
 **Example:**
+
 ```tolk
 cs.assertEnd();  // Ensure all data consumed
 ```
@@ -1094,6 +1130,7 @@ fun slice.remainingBitsCount(self): int
 Returns the number of data bits remaining.
 
 **Example from jetton:**
+
 ```tolk
 assert (msg.forwardPayload.remainingBitsCount()) throw ERR_INVALID_PAYLOAD;
 ```
@@ -1269,6 +1306,7 @@ fun address(stdAddress: slice): address
 Parses a valid contract address at compile-time.
 
 **Examples:**
+
 ```tolk
 address("EQCRDM9h4k3UJdOePPuyX40mCgA4vxge5Dc5vjBR8djbEKC5")
 address("0:527964d55cfa6eb731f4bfc07e9d025098097ef8505519e853986279bd8400d8")
@@ -1286,6 +1324,7 @@ fun address.getWorkchainAndHash(self): (int8, uint256)
 Extracts workchain and hash from an internal address.
 
 **Example from wallet-v5:**
+
 ```tolk
 var (senderWorkchain, senderAddrHash) = in.senderAddress.getWorkchainAndHash();
 ```
@@ -1300,6 +1339,7 @@ fun address.getWorkchain(self): int8
 Extracts only workchain.
 
 **Example from jetton:**
+
 ```tolk
 assert (msg.transferRecipient.getWorkchain() == BASECHAIN) throw ERR_WRONG_WORKCHAIN;
 ```
@@ -1341,6 +1381,7 @@ fun address.fromWorkchainAndHash(workchain: int8, hash: uint256): address
 Constructs an internal address from workchain and hash.
 
 **Example:**
+
 ```tolk
 var addr = address.fromWorkchainAndHash(0, computedHash);
 ```
@@ -1376,6 +1417,7 @@ enum BounceMode {
 ```
 
 **Example from jetton wallet:**
+
 ```tolk
 val deployMsg = createMessage({
     bounce: BounceMode.Only256BitsOfBody,
@@ -1398,6 +1440,7 @@ fun createMessage<TBody>(options: CreateMessageOptions<TBody>): OutMessage
 Creates an outgoing internal message.
 
 **CreateMessageOptions:**
+
 - `bounce: BounceMode | OldBounceMode` - Bounce behavior
 - `value: coins | (coins, ExtraCurrenciesMap)` - Attached value
 - `dest: address | builder | (int8, uint256) | AutoDeployAddress` - Destination
@@ -1433,6 +1476,7 @@ excessesMsg.send(SEND_MODE_IGNORE_ERRORS);
 ```
 
 **Hint**: Don't call `body.toCell()`, pass body directly! The compiler optimizes:
+
 - Small bodies are inlined without cell creation
 - Large bodies are automatically wrapped in refs
 
@@ -1451,6 +1495,7 @@ struct AutoDeployAddress {
 Used to deploy a contract by sending message to auto-calculated address.
 
 **Example:**
+
 ```tolk
 val deployMsg = createMessage({
     dest: {
@@ -1477,6 +1522,7 @@ fun AutoDeployAddress.calculateAddress(self): address
 Calculates the address a deployed contract will have.
 
 **Example from jetton:**
+
 ```tolk
 val jwDeployed = {
     workchain: 0,
@@ -1503,6 +1549,7 @@ fun OutMessage.send(self, sendMode: int): void
 Sends a ready message cell.
 
 **Example:**
+
 ```tolk
 createMessage({ ... }).send(SEND_MODE_REGULAR);
 ```
@@ -1540,10 +1587,12 @@ fun createExternalLogMessage<TBody>(options: CreateExternalLogMessageOptions<TBo
 Creates an external outgoing message (for logging/events).
 
 **CreateExternalLogMessageOptions:**
+
 - `dest: any_address | builder | ExtOutLogBucket` - External destination
 - `body: TBody` - Message body
 
 **Example:**
+
 ```tolk
 val emitMsg = createExternalLogMessage({
     dest: createAddressNone(),
@@ -1581,6 +1630,7 @@ fun reserveToncoinsOnBalance(nanoTonCoins: coins, reserveMode: int): void
 Creates an output action to reserve Toncoins on balance.
 
 **Example:**
+
 ```tolk
 reserveToncoinsOnBalance(MIN_TONS_FOR_STORAGE, RESERVE_MODE_EXACT_AMOUNT);
 ```
@@ -1609,6 +1659,7 @@ fun createEmptyMap<K, V>(): map<K, V>
 Returns an empty typed map (essentially PUSHNULL).
 
 **Example:**
+
 ```tolk
 var extensions: map<uint256, bool> = createEmptyMap();
 ```
@@ -1625,6 +1676,7 @@ fun map<K, V>.isEmpty(self): bool
 Checks if map is empty (cell is null).
 
 **Example from wallet-v5:**
+
 ```tolk
 assert (!storage.extensions.isEmpty()) throw ERROR_DISABLE_SIGNATURE_WHEN_EXTENSIONS_IS_EMPTY;
 ```
@@ -1643,6 +1695,7 @@ fun map<K, V>.exists(self, key: K): bool
 Checks if key exists in map.
 
 **Example from wallet-v5:**
+
 ```tolk
 if (!storage.extensions.exists(senderAddrHash)) {
     return;
@@ -1661,6 +1714,7 @@ fun map<K, V>.get(self, key: K): MapLookupResult<V>
 Gets an element by key. Returns `MapLookupResult` with `isFound` flag.
 
 **Example:**
+
 ```tolk
 val result = balances.get(userAddress);
 if (result.isFound) {
@@ -1691,6 +1745,7 @@ fun map<K, V>.set(mutate self, key: K, value: V): self
 Sets an element by key.
 
 **Example:**
+
 ```tolk
 balances.set(userAddress, newBalance);
 ```
@@ -1731,6 +1786,7 @@ fun map<K, V>.addIfNotExists(mutate self, key: K, value: V): bool
 Only sets if key doesn't exist. Returns whether added.
 
 **Example from wallet-v5:**
+
 ```tolk
 val inserted = storage.extensions.addIfNotExists(extensionAddrHash, true);
 assert (inserted) throw ERROR_ADD_EXTENSION;
@@ -1748,6 +1804,7 @@ fun map<K, V>.delete(mutate self, key: K): bool
 Deletes element. Returns whether deleted.
 
 **Example from wallet-v5:**
+
 ```tolk
 val removed = storage.extensions.delete(extensionAddrHash);
 assert (removed) throw ERROR_REMOVE_EXTENSION;
@@ -1781,6 +1838,7 @@ fun map<K, V>.iteratePrev(self, current: MapEntry<K, V>): MapEntry<K, V>
 ```
 
 **Example - iterate over all elements:**
+
 ```tolk
 var entry = balances.findFirst();
 while (entry.isFound) {
@@ -1808,6 +1866,7 @@ fun tuple.pop<T>(mutate self): T
 ```
 
 **Example:**
+
 ```tolk
 var t = createEmptyTuple();
 t.push(42);
@@ -1829,6 +1888,7 @@ fun T.fromTuple(packedObject: tuple): T
 Packs/unpacks object to/from tuple (useful for logging or low-level operations).
 
 **Example:**
+
 ```tolk
 struct Point { x: int, y: int }
 
@@ -1853,6 +1913,7 @@ fun slice.calculateSizeStrict(self, maxCells: int): (int, int, int)
 Calculates `(distinctCells, totalBits, totalRefs, success)` for storage fee estimation.
 
 **Example:**
+
 ```tolk
 var (cells, bits, refs, ok) = userDataCell.calculateSize(1000);
 if (ok) {
@@ -1881,6 +1942,7 @@ fun sizeof<T>(anyVariable: T): int
 Returns stack slots an object occupies (compile-time).
 
 **Example:**
+
 ```tolk
 struct Point { x: int, y: int }
 sizeof(somePoint)     // 2 (two fields, one slot each)
@@ -1900,6 +1962,7 @@ fun debug.dumpStack(): void
 Only work in local TVM execution with debug verbosity.
 
 **Example:**
+
 ```tolk
 debug.print(currentBalance);
 debug.printString("Processing transfer");
@@ -1918,6 +1981,7 @@ fun T.typeNameOfObject(self): slice
 Returns human-readable type name for logging.
 
 **Example:**
+
 ```tolk
 debug.printString(int.typeName());           // "int"
 debug.printString(42.typeNameOfObject());    // "int"
@@ -1933,6 +1997,7 @@ fun stringHexToSlice(constStringBytesHex: slice): slice
 Converts constant hex string to slice at compile-time.
 
 **Example:**
+
 ```tolk
 const header = stringHexToSlice("abcdef");  // slice with bytes 0xAB,0xCD,0xEF
 ```
@@ -1949,6 +2014,7 @@ fun slice.skipBouncedPrefix(mutate self): self
 Skips 0xFFFFFFFF prefix from bounced message body.
 
 **Example from jetton wallet:**
+
 ```tolk
 fun onBouncedMessage(in: InMessageBounced) {
     in.bouncedBody.skipBouncedPrefix();
@@ -2007,6 +2073,7 @@ Checks if dictionary is empty.
 ### Get Operations
 
 Three variants for different key types:
+
 - `iDict*` - Signed integer keys
 - `uDict*` - Unsigned integer keys
 - `sDict*` - Arbitrary slice keys
@@ -2019,12 +2086,14 @@ fun dict.sDictGet(self, keyLen: int, key: slice): (slice?, bool)
 ```
 
 **Parameters:**
+
 - `keyLen`: Key length in bits
 - `key`: The key to lookup
 
 **Returns**: `(value, found)` tuple
 
 **Example:**
+
 ```tolk
 var (value, found) = myDict.uDictGet(256, userHash);
 if (found) {
@@ -2301,6 +2370,7 @@ fun cell.beginParseSpecial(self): (slice, bool)
 Transforms exotic or ordinary cell into slice. Returns `(slice, isExotic)`.
 
 **Example:**
+
 ```tolk
 var (s, isExotic) = c.beginParseSpecial();
 if (isExotic) {
@@ -2368,6 +2438,7 @@ fun cell.toLibraryReference(self): cell
 Transforms cell into a library reference (exotic cell with type + hash).
 
 **Example:**
+
 ```tolk
 var libRef = myCode.toLibraryReference();
 // Creates exotic cell: 8 bits (type=2) + 256 bits (hash)
@@ -2388,6 +2459,7 @@ fun getGasConsumedAtTheMoment(): int
 Returns amount of gas (in gas units) consumed so far in Computation Phase.
 
 **Example:**
+
 ```tolk
 var gasBefore = getGasConsumedAtTheMoment();
 // ... do something
@@ -2405,6 +2477,7 @@ fun acceptExternalMessage(): void
 Required when processing external messages. Accepts the message to blockchain and agrees to buy gas.
 
 **Example from wallet-v5:**
+
 ```tolk
 fun onExternalMessage(inMsgBody: slice) {
     // ... validate signature and seqno
@@ -2441,10 +2514,12 @@ fun calculateGasFee(workchain: int8, gasUsed: int): coins
 Calculates fee (in nanotoncoins) for gas consumption.
 
 **Parameters:**
+
 - `workchain`: Workchain ID (usually 0 for basechain)
 - `gasUsed`: Gas units consumed
 
 **Example:**
+
 ```tolk
 var gasConsumed = 5000;
 var fee = calculateGasFee(BASECHAIN, gasConsumed);
@@ -2468,12 +2543,14 @@ fun calculateStorageFee(workchain: int8, seconds: int, bits: int, cells: int): c
 Calculates storage fee for given size and duration.
 
 **Parameters:**
+
 - `workchain`: Workchain ID
 - `seconds`: Storage duration
 - `bits`: Total data bits
 - `cells`: Total cells count
 
 **Example:**
+
 ```tolk
 var (cells, bits, refs, ok) = dataCell.calculateSize(1000);
 var dailyStorageFee = calculateStorageFee(0, 86400, bits, cells);
@@ -2489,6 +2566,7 @@ fun calculateForwardFee(workchain: int8, bits: int, cells: int): coins
 Calculates forward fee for message of given size.
 
 **Example:**
+
 ```tolk
 var msgSize = msgCell.calculateSizeStrict(1000);
 var forwardFee = calculateForwardFee(0, msgSize.1, msgSize.0);
@@ -2551,6 +2629,7 @@ fun listPrepend<X>(head: X, tail: tuple?): tuple
 Adds element to the beginning. Returns new list (does not mutate).
 
 **Example:**
+
 ```tolk
 var list = createEmptyList();
 list = listPrepend(3, list);    // [3]
@@ -2570,6 +2649,7 @@ fun listSplit<X>(list: tuple): (X, tuple?)
 Extracts head and tail from list.
 
 **Example:**
+
 ```tolk
 var (head, tail) = listSplit(list);  // head=1, tail=[2,3]
 ```
@@ -2620,6 +2700,7 @@ fun setTvmRegisterC3(c: continuation): void
 Updates c3 register. Used for runtime code updates.
 
 **Example:**
+
 ```tolk
 var newCode = updatedCodeCell;
 var newContinuation = transformSliceToContinuation(newCode.beginParse());
@@ -2658,11 +2739,13 @@ Moves a variable to the top of the stack. Compiled to NOP (optimization hint).
 This stdlib reference covers all 6 modules with 300+ functions. Key takeaways:
 
 **Most Used Modules:**
+
 - `common.tolk` - Always available, use for 95% of contracts
 - `gas-payments` - Import for fee calculations
 - `tvm-dicts`, `lisp-lists`, `exotic-cells`, `tvm-lowlevel` - Rarely needed
 
 **Best Practices:**
+
 - Use `map<K, V>` instead of low-level dicts
 - Use `createMessage` instead of manual message construction
 - Use `lazy` loading for message parsing
@@ -2670,6 +2753,7 @@ This stdlib reference covers all 6 modules with 300+ functions. Key takeaways:
 - Check return values (use `isFound`, check `bool` returns, etc.)
 
 **Common Patterns:**
+
 ```tolk
 // Storage pattern
 var storage = lazy Storage.load();

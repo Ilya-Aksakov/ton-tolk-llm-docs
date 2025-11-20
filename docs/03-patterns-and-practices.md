@@ -50,6 +50,7 @@ fun WalletStorage.save(self) {
 ```
 
 **Usage:**
+
 ```tolk
 // Load storage (lazy loading for gas optimization)
 var storage = lazy WalletStorage.load();
@@ -81,6 +82,7 @@ struct MinterStorage {
 ```
 
 **Loading nested data:**
+
 ```tolk
 var storage = MinterStorage.load();
 var extra = storage.extraData.load();  // Load from ref
@@ -102,6 +104,7 @@ struct Storage {
 ```
 
 **Usage:**
+
 ```tolk
 var storage = Storage.load();
 
@@ -182,6 +185,7 @@ struct (0xd53276db) ReturnExcessesBack {
 ```
 
 **Key points:**
+
 - Opcode in hex format: `struct (0x12345678)`
 - Use nullable for optional fields: `address?`, `cell?`
 - Use `RemainingBitsAndRefs` for "rest of message" payload
@@ -242,6 +246,7 @@ struct (0x00000015) MintNewJettons {
 ```
 
 **Usage:**
+
 ```tolk
 // Load nested message from ref
 var internalTransfer = msg.internalTransferMsg.load();
@@ -1145,6 +1150,7 @@ fun SnakedExtraActions.getNext(self): SnakedExtraActions {
 ```
 
 **Usage:**
+
 ```tolk
 fun processExtraActions(extraActions: SnakedExtraActions) {
     while (true) {
@@ -1382,6 +1388,7 @@ fun onExternalMessage(extBody: slice) {
 ```
 
 **Use cases:**
+
 - External messages where you want to accept gas even if processing fails
 - Optional operations that shouldn't fail the whole transaction
 - Experimental/beta features with fallback behavior

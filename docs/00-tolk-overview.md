@@ -9,6 +9,7 @@ Tolk is a modern programming language for the TON Virtual Machine (TVM), develop
 **Language Version**: Tolk 1.2
 
 **Key Advantages over FunC:**
+
 - Type safety with type inference
 - Structures and union types (algebraic data types)
 - Built-in support for `map<K, V>` instead of low-level dictionaries
